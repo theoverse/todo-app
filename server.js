@@ -57,8 +57,9 @@ app.get('/', function(req, res) {
 })
 
 app.post('/create-item', function(req, res) {
-    console.log(req.body.item)
-    res.send("Thank you.")
+    db.collection('items').insertOne({text: req.body.item}, function() {
+        res.send("Thank you.")
+    })
 })
 
 app.listen(3000)
