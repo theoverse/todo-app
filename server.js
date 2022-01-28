@@ -1,6 +1,19 @@
 let express = require('express')
+let mongodb = require('mongodb').MongoClient
+let dotenv = require('dotenv')
+
+dotenv.config()
+
+let url = process.env.MONGOLAB_URI
 
 let app = express()
+let db
+
+let connectString = url
+mongodb.connect(connectString, {useNewUrlParser: true}, function(err, client) {
+    db = client.db()
+    app.listen(3000)
+})
 
 app.use(express.urlencoded({extended: false}))
 
@@ -62,4 +75,3 @@ app.post('/create-item', function(req, res) {
     })
 })
 
-app.listen(3000)
