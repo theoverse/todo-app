@@ -1,5 +1,6 @@
 let express = require('express')
 let mongodb = require('mongodb').MongoClient
+let ObjectId = require('mongodb').ObjectId
 let dotenv = require('dotenv')
 
 dotenv.config()
@@ -9,12 +10,15 @@ let url = process.env.MONGOLAB_URI
 let app = express()
 let db
 
+app.use(express.static('public'))
+
 let connectString = url
 mongodb.connect(connectString, {useNewUrlParser: true}, function(err, client) {
     db = client.db()
     app.listen(3000)
 })
 
+app.use(express.json())
 app.use(express.urlencoded({extended: false}))
 
 app.get('/', function(req, res) {
@@ -45,7 +49,7 @@ app.get('/', function(req, res) {
              return ` <li class="list-group-item list-group-item-action d-flex align-items-center justify-content-between">
              <span class="item-text">${item.text}</span>
              <div>
-               <button class="edit-me btn btn-secondary btn-sm mr-1">Edit</button>
+               <button data-id="${item._id}" class="edit-me btn btn-secondary btn-sm mr-1">Edit</button>
                <button class="delete-me btn btn-danger btn-sm">Delete</button>
              </div>
            </li>`
@@ -53,7 +57,9 @@ app.get('/', function(req, res) {
         </ul>
         
       </div>
-      
+        
+      <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+      <script src="browser.js"></script>
     </body>
     </html>`)
     })
@@ -65,3 +71,8 @@ app.post('/create-item', function(req, res) {
     })
 })
 
+app.post('/update-item', function(req, res) {
+    db.collection('items').findOneAndUpdate({_id: new ObjectId(req.body.id)}, {$set: {text: req.body.text}}, function() {
+        res.send("Success!")
+    })
+})
