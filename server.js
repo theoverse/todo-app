@@ -21,6 +21,18 @@ mongodb.connect(connectString, {useNewUrlParser: true}, function(err, client) {
 app.use(express.json())
 app.use(express.urlencoded({extended: false}))
 
+function passwordProtected(req, res, next) {
+    res.set('WWW-Authenticate', 'Basic realm="Simple Todo App"')
+    console.log(req.headers.authorization)
+    if (req.headers.authorization == "Basic dXNlcm5hbWU6cGFzc3dvcmQ=") {
+            next()
+    } else {
+            res.status(401).send("Authentication required")
+    }
+}
+
+app.use(passwordProtected)
+
 app.get('/', function(req, res) {
     db.collection('items').find().toArray(function(err, items) {
         res.send(`<!DOCTYPE html>
