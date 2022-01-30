@@ -2,6 +2,7 @@ let express = require('express')
 let mongodb = require('mongodb').MongoClient
 let ObjectId = require('mongodb').ObjectId
 let dotenv = require('dotenv')
+let sanitizeHTML = require('sanitize-html')
 
 dotenv.config()
 
@@ -23,7 +24,6 @@ app.use(express.urlencoded({extended: false}))
 
 function passwordProtected(req, res, next) {
     res.set('WWW-Authenticate', 'Basic realm="Simple Todo App"')
-    console.log(req.headers.authorization)
     if (req.headers.authorization == "Basic dXNlcm5hbWU6cGFzc3dvcmQ=") {
             next()
     } else {
@@ -74,13 +74,15 @@ app.get('/', function(req, res) {
 })
 
 app.post('/create-item', function(req, res) {
-    db.collection('items').insertOne({text: req.body.text}, function(err, info) {
+    let safeText = sanitizeHTML(req.body.text, {allowedTags: [], allowedAttributes: {}})
+    db.collection('items').insertOne({text: safeText}, function(err, info) {
         res.json({ _id: info.insertedId.toString(), text: req.body.text })
     })
 })
 
 app.post('/update-item', function(req, res) {
-    db.collection('items').findOneAndUpdate({_id: new ObjectId(req.body.id)}, {$set: {text: req.body.text}}, function() {
+    let safeText = sanitizeHTML(req.body.text, {allowedTags: [], allowedAttributes: {}})
+    db.collection('items').findOneAndUpdate({_id: new ObjectId(req.body.id)}, {$set: {text: safeText}}, function() {
         res.send("Success!")
     })
 })
