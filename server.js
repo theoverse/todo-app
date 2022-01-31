@@ -11,12 +11,17 @@ let url = process.env.MONGOLAB_URI
 let app = express()
 let db
 
+let port = process.env.PORT
+if (port == null || port == "") {
+  port = 3000
+}
+
 app.use(express.static('public'))
 
 let connectString = url
 mongodb.connect(connectString, {useNewUrlParser: true}, function(err, client) {
     db = client.db()
-    app.listen(3000)
+    app.listen(port)
 })
 
 app.use(express.json())
